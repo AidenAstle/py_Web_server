@@ -1,4 +1,4 @@
-import socket, time, logging
+import socket, time, logging, json
 
 # CONFIG
 logging.basicConfig(filename='server.log', level=logging.DEBUG, 
@@ -21,7 +21,7 @@ def http_GET(file_path):
     return response.encode()
 
     
-def http_POST(file_path):
+def http_POST(json_file):
     return response.encode()
 
 

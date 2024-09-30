@@ -1,4 +1,4 @@
-import socket, time, logging
+import socket, time, logging, json, http.server
 import endpts
 
 
@@ -11,7 +11,10 @@ logger = logging.getLogger()
 # run 'netstat -aon' and find listening TCP port
 # run 'ipconfig' to check IPv4 addr
 # 192.168.1.193:8080
-SERVER_HOST = "192.168.1.193"
+host_name = socket.gethostname()
+host_ip = (socket.gethostbyname_ex(host_name)[2])[0]
+logger.info(f"HOST_NAME : {host_name}\tHOST_IP: {host_ip}")
+SERVER_HOST = host_ip
 SERVER_PORT = 8080
 
 # Create a server socket
@@ -47,31 +50,16 @@ while True:
     
     if http_method == 'GET':
         if path == '/':
-            fin = open('static/index.html')
-            content = fin.read()
-            fin.close()
-            response = 'HTTP/1.1 200 OK\n\n' + content
-            logger.debug(response)
-            client_socket.sendall(response.encode())
+            response = endpts.http_GET('/index')
+            client_socket.sendall(response)
             client_socket.close()
         else:
-            try:
-                fin = open('static'+path+'.html')
-                content = fin.read()
-                fin.close()
-                response = 'HTTP/1.1 200 OK\n\n' + content
-                logger.debug(response)
-                client_socket.sendall(response.encode())
-                client_socket.close()
-            except FileNotFoundError:
-                fin = open('static/404.html')
-                content = fin.read(); fin.close()
-                response = 'HTTP/1.1 404 Not Found\n\n' + content
-                logger.debug("404 Not Found")
-                client_socket.sendall(response.encode())
-                client_socket.close()
+            response = endpts.http_GET(path)
+            client_socket.sendall(response)
+            client_socket.close() 
     else:
         response = 'HTTP/1.1 405 Method Not Allowed\n\nALLOW: GET'
         logger.debug(response)
         client_socket.sendall(response.encode())
         client_socket.close()
+    logger.debug('-------- Client Socket Connection Closed --------')
